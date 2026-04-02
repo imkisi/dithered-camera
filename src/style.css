@@ -1,12 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
 
 :root {
   --bg-color: #f4f4f4;
   --text-color: #000;
   --accent-color: #0000ff;
   --border-color: #000;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  line-height: 1.5;
+  font-family: 'Bebas Neue', system-ui, -apple-system, sans-serif;
+  line-height: 1;
   font-weight: 400;
   color-scheme: light;
   background-color: var(--bg-color);
