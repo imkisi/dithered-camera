@@ -8,43 +8,43 @@
   </head>
   <body>
     <div id="app">
-      <div class="overlay">
-        <h1>DITHER CAM</h1>
-        <p>REAL-TIME BITMAP PROCESSOR</p>
-      </div>
-
-      <div class="status-indicator">
-        <div class="status-dot"></div>
-        <span>LIVE FEED</span>
-      </div>
-
-      <div class="camera-container">
-        <canvas id="camera-canvas"></canvas>
-      </div>
-
-      <div class="controls-panel">
-        <div class="control-group">
-          <label for="resolution">Resolution</label>
-          <input type="range" id="resolution" min="1" max="8" step="1" value="4">
+      <div class="design-wrapper">
+        <div class="corner tl"></div><div class="corner tr"></div>
+        <div class="corner bl"></div><div class="corner br"></div>
+        
+        <div class="camera-container">
+          <canvas id="camera-canvas"></canvas>
         </div>
-        <div class="control-group">
-          <label for="contrast">Contrast</label>
-          <input type="range" id="contrast" min="0.5" max="2.0" step="0.1" value="1.1">
-        </div>
-        <div class="control-group">
-          <label>Palette</label>
-          <div style="display: flex; gap: 8px;">
+
+        <div class="menu-panel">
+          <div class="corner tl"></div><div class="corner tr"></div>
+          <div class="corner bl"></div><div class="corner br"></div>
+          
+          <div class="menu-title">MENU</div>
+          
+          <div class="palette-options">
             <button class="palette-btn active" data-palette="bw">B&W</button>
-            <button class="palette-btn" data-palette="gb">GAMEBOY</button>
             <button class="palette-btn" data-palette="retro">RETRO</button>
+            <button class="palette-btn" data-palette="gb">GAMEBOY</button>
+          </div>
+          
+          <div class="control-group">
+            <label for="contrast">CONTRAST</label>
+            <input type="range" id="contrast" min="0.5" max="2.0" step="0.1" value="1.1">
+          </div>
+          
+          <div class="control-group">
+            <label for="resolution">RESOLUTION</label>
+            <input type="range" id="resolution" min="1" max="8" step="1" value="4">
           </div>
         </div>
-        <div class="control-group" style="justify-content: flex-end;">
-          <button id="capture-btn" class="capture-btn">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-            CAPTURE
-          </button>
-        </div>
+
+        <button id="capture-btn" class="capture-btn">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+            <circle cx="12" cy="13" r="4"></circle>
+          </svg>
+        </button>
       </div>
     </div>
     <script type="module" src="/src/main.js"></script>
