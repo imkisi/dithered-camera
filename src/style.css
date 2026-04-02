@@ -93,9 +93,8 @@ canvas {
 /* Title */
 .menu-title {
   font-weight: 800;
-  font-size: 16px;
+  font-size: 24px;
   margin-bottom: 24px;
-  letter-spacing: -0.5px;
 }
 
 /* Palette Segmented Control */
@@ -143,11 +142,10 @@ canvas {
 }
 
 .control-group label {
-  font-size: 10px;
-  font-weight: 800;
+  font-size: 18px;
+  font-weight: 400;
   text-transform: uppercase;
   color: #000;
-  letter-spacing: 0.5px;
 }
 
 /* Sliders */
