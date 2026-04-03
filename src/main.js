@@ -306,6 +306,13 @@ function render() {
 
 // --- Event Listeners ---
 
+document.getElementById('menu-toggle').addEventListener('click', () => {
+  const panel = document.getElementById('menu-panel');
+  const btn = document.getElementById('menu-toggle');
+  panel.classList.toggle('collapsed');
+  btn.textContent = panel.classList.contains('collapsed') ? '+' : '−';
+});
+
 document.getElementById('resolution').addEventListener('input', (e) => {
   state.resolution = parseFloat(e.target.value);
 });
