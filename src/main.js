@@ -26,11 +26,51 @@ const fsSource = `
   uniform float uContrast;
   uniform float uResolution;
   uniform int uPaletteType;
+  uniform int uEffectType;
   uniform vec2 uTexSize;
 
+  float rand(vec2 co){
+      return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+  }
+
+  // 4x4 Clustered Dot Matrix
+  float clustered(vec2 uv) {
+    vec2 p = floor(mod(uv * uTexSize / uResolution, 4.0));
+    int x = int(p.x);
+    int y = int(p.y);
+    float m[16];
+    m[0]=12.0; m[1]=5.0;  m[2]=6.0;  m[3]=13.0;
+    m[4]=4.0;  m[5]=0.0;  m[6]=1.0;  m[7]=7.0;
+    m[8]=11.0; m[9]=3.0;  m[10]=2.0; m[11]=8.0;
+    m[12]=15.0;m[13]=10.0;m[14]=9.0; m[15]=14.0;
+    int index = y * 4 + x;
+    for(int i = 0; i < 16; i++) {
+        if (i == index) return m[i] / 15.0;
+    }
+    return 0.0;
+  }
+
+  float asciiChar(vec2 p, float luma) {
+    if (luma < 0.2) return 0.0;
+    if (luma < 0.4) {
+      float d = length(p - 0.5);
+      return d < 0.15 ? 1.0 : 0.0;
+    }
+    if (luma < 0.6) {
+      float horiz = step(0.4, p.y) * step(p.y, 0.6) * step(0.2, p.x) * step(p.x, 0.8);
+      float vert = step(0.4, p.x) * step(p.x, 0.6) * step(0.2, p.y) * step(p.y, 0.8);
+      return max(horiz, vert);
+    }
+    if (luma < 0.8) {
+      float d = length(p - 0.5);
+      return (d < 0.35 && d > 0.15) ? 1.0 : 0.0;
+    }
+    return (p.x > 0.1 && p.x < 0.9 && p.y > 0.1 && p.y < 0.9) ? 1.0 : 0.0;
+  }
+
   // 8x8 Bayer Matrix
-  float bayer8(vec2 uv) {
-    vec2 p = floor(mod(uv * uTexSize / uResolution, 8.0));
+  float bayer8(vec2 uv, vec2 scale) {
+    vec2 p = floor(mod(uv * scale * uTexSize / uResolution, 8.0));
     int x = int(p.x);
     int y = int(p.y);
     
@@ -83,10 +123,37 @@ const fsSource = `
     float luma = dot(color, vec3(0.299, 0.587, 0.114));
     
     // Dithering
-    float limit = bayer8(vTextureCoord);
-    float finalLuma = luma > limit ? 1.0 : 0.0;
+    float finalLuma = 0.0;
+    if (uEffectType == 0) { // Bayer
+        float limit = bayer8(vTextureCoord, vec2(1.0));
+        finalLuma = luma > limit ? 1.0 : 0.0;
+    } else if (uEffectType == 1) { // Bitmap
+        finalLuma = luma > 0.5 ? 1.0 : 0.0;
+    } else if (uEffectType == 2) { // Stretch
+        float limit = bayer8(vTextureCoord, vec2(1.0, 0.25));
+        finalLuma = luma > limit ? 1.0 : 0.0;
+    } else if (uEffectType == 3) { // Clustered
+        float limit = clustered(vTextureCoord);
+        finalLuma = luma > limit ? 1.0 : 0.0;
+    } else if (uEffectType == 4) { // ASCII
+        vec2 blockRes = vec2(8.0) * uResolution;
+        vec2 blockUv = floor(vTextureCoord * uTexSize / blockRes) / (uTexSize / blockRes) + (0.5 / (uTexSize / blockRes));
+        vec4 blockTex = texture2D(uSampler, blockUv);
+        vec3 blockColor = (blockTex.rgb - 0.5) * uContrast + 0.5;
+        float bLuma = dot(blockColor, vec3(0.299, 0.587, 0.114));
+        vec2 charP = fract(vTextureCoord * uTexSize / blockRes);
+        finalLuma = asciiChar(charP, bLuma);
+    } else if (uEffectType == 5) { // Random
+        float limit = rand(floor(vTextureCoord * uTexSize / uResolution));
+        finalLuma = luma > limit ? 1.0 : 0.0;
+    }
     
-    gl_FragColor = vec4(applyPalette(luma > limit ? (luma * 1.2) : (luma * 0.8)), 1.0);
+    float outLuma = finalLuma > 0.5 ? min(luma * 1.2 + 0.2, 1.0) : max(luma * 0.8 - 0.2, 0.0);
+    if (uEffectType == 1 || uEffectType == 4 || uEffectType == 5) {
+       outLuma = finalLuma > 0.5 ? 1.0 : 0.0;
+    }
+    
+    gl_FragColor = vec4(applyPalette(outLuma), 1.0);
   }
 `;
 
@@ -127,6 +194,7 @@ const programInfo = {
     uContrast: gl.getUniformLocation(shaderProgram, 'uContrast'),
     uResolution: gl.getUniformLocation(shaderProgram, 'uResolution'),
     uPaletteType: gl.getUniformLocation(shaderProgram, 'uPaletteType'),
+    uEffectType: gl.getUniformLocation(shaderProgram, 'uEffectType'),
     uTexSize: gl.getUniformLocation(shaderProgram, 'uTexSize'),
   },
 };
@@ -173,6 +241,7 @@ let state = {
   resolution: 4,
   contrast: 1.1,
   palette: 0, // 0: BW, 1: GB, 2: Retro
+  effect: 0, // 0: bayer, 1: bitmap, 2: stretch, 3: clustered, 4: ascii, 5: random
   width: 0,
   height: 0
 };
@@ -227,6 +296,7 @@ function render() {
   gl.uniform1f(programInfo.uniformLocations.uContrast, state.contrast);
   gl.uniform1f(programInfo.uniformLocations.uResolution, state.resolution);
   gl.uniform1i(programInfo.uniformLocations.uPaletteType, state.palette);
+  gl.uniform1i(programInfo.uniformLocations.uEffectType, state.effect);
   gl.uniform2f(programInfo.uniformLocations.uTexSize, state.width, state.height);
 
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -253,6 +323,14 @@ document.querySelectorAll('.palette-btn').forEach(btn => {
     if (p === 'bw') state.palette = 0;
     else if (p === 'gb') state.palette = 1;
     else if (p === 'retro') state.palette = 2;
+  });
+});
+
+document.querySelectorAll('.effect-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.effect-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.effect = parseInt(btn.dataset.effect);
   });
 });
 
