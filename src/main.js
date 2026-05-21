@@ -153,7 +153,14 @@ const fsSource = `
        outLuma = finalLuma > 0.5 ? 1.0 : 0.0;
     }
     
-    gl_FragColor = vec4(applyPalette(outLuma), 1.0);
+    vec3 rgb;
+    if (uPaletteType == 3) {
+        rgb = clamp(color * (outLuma / max(luma, 0.01)), 0.0, 1.0);
+    } else {
+        rgb = applyPalette(outLuma);
+    }
+    
+    gl_FragColor = vec4(rgb, 1.0);
   }
 `;
 
@@ -331,6 +338,7 @@ document.querySelectorAll('.palette-btn').forEach(btn => {
     if (p === 'bw') state.palette = 0;
     else if (p === 'gb') state.palette = 1;
     else if (p === 'retro') state.palette = 2;
+    else if (p === 'color') state.palette = 3;
   });
 });
 

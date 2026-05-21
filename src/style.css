@@ -147,7 +147,7 @@ canvas {
 }
 
 .palette-btn, .effect-btn {
-  flex: 0 0 33.33%;
+  flex: 0 0 50%;
   background: transparent;
   color: #000;
   border: none;
@@ -162,11 +162,7 @@ canvas {
   box-sizing: border-box;
 }
 
-.effect-btn {
-  flex: 0 0 50%;
-}
-
-.palette-btn:nth-child(3n), .effect-btn:nth-child(2n) {
+.palette-btn:nth-child(2n), .effect-btn:nth-child(2n) {
   border-right: none;
 }
 
